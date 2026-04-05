@@ -16,6 +16,13 @@ A lightweight, free class schedule planner you can run locally or host anywhere.
 - Dynamic calendar range based on your earliest/latest class times.
 - Save automatically to browser local storage.
 - Import/export schedule JSON.
+<<<<<<< HEAD
+<<<<<<< HEAD
+- Import university-exported CSV files (WSU-compatible column parsing included).
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
 - Export schedule as CSV (easy to share/use in Excel).
 - Shareable links using URL hash encoding.
 
@@ -31,6 +38,20 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000>.
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+## Maintenance checks
+
+Run this before committing to ensure no unresolved merge markers are in app files:
+
+```bash
+./scripts/check-merge-markers.sh
+```
+
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
 ## Next Ideas
 
 - Google/Outlook calendar export (ICS)

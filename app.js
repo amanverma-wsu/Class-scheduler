@@ -19,8 +19,20 @@ const els = {
   exportJson: document.getElementById("export-json"),
   importJson: document.getElementById("import-json"),
   exportCsv: document.getElementById("export-csv"),
+<<<<<<< HEAD
+<<<<<<< HEAD
+  importUniversityCsv: document.getElementById("import-university-csv"),
   shareLink: document.getElementById("share-link"),
   clearAll: document.getElementById("clear-all"),
+  importUniversityFile: document.getElementById("import-university-file"),
+=======
+  shareLink: document.getElementById("share-link"),
+  clearAll: document.getElementById("clear-all"),
+>>>>>>> origin/main
+=======
+  shareLink: document.getElementById("share-link"),
+  clearAll: document.getElementById("clear-all"),
+>>>>>>> origin/main
 };
 
 function setStatus(msg, isError = false) {
@@ -87,6 +99,50 @@ function annotateConflicts(classes) {
   });
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+function computeDayLayouts(classes) {
+  const layout = new Map();
+  const classesByDay = new Map(DAYS.map((d) => [d, []]));
+
+  for (const c of classes) {
+    for (const day of c.days) {
+      if (classesByDay.has(day)) {
+        classesByDay.get(day).push(c);
+      }
+    }
+  }
+
+  for (const day of DAYS) {
+    const dayClasses = classesByDay.get(day).sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
+    const laneEndTimes = [];
+
+    for (const c of dayClasses) {
+      let lane = laneEndTimes.findIndex((endMin) => endMin <= c.startMin);
+      if (lane === -1) {
+        lane = laneEndTimes.length;
+        laneEndTimes.push(c.endMin);
+      } else {
+        laneEndTimes[lane] = c.endMin;
+      }
+      layout.set(`${c.id}:${day}`, { lane });
+    }
+
+    const totalLanes = Math.max(1, laneEndTimes.length);
+    for (const c of dayClasses) {
+      const key = `${c.id}:${day}`;
+      const current = layout.get(key);
+      layout.set(key, { ...current, totalLanes });
+    }
+  }
+
+  return layout;
+}
+
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.classes));
 }
@@ -159,6 +215,14 @@ function renderCalendar() {
   const range = getDisplayRange(classes);
   const startMin = range.startMin;
   const endMin = range.endMin;
+<<<<<<< HEAD
+<<<<<<< HEAD
+  const columnCount = DAYS.length + 1;
+  const dayLayouts = computeDayLayouts(classes);
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
 
   const grid = document.createElement("div");
   grid.className = "grid";
@@ -206,12 +270,31 @@ function renderCalendar() {
 
       const rowIndex = 1 + startRow;
       const gridColIndex = 2 + col;
+<<<<<<< HEAD
+<<<<<<< HEAD
+      const index = rowIndex * columnCount + (gridColIndex - 1);
+=======
       const index = rowIndex * 6 + (gridColIndex - 1);
+>>>>>>> origin/main
+=======
+      const index = rowIndex * 6 + (gridColIndex - 1);
+>>>>>>> origin/main
       const cell = grid.children[index];
       if (!cell) continue;
 
       const block = document.createElement("div");
       block.className = `block ${c.conflict ? "conflict" : ""}`;
+<<<<<<< HEAD
+<<<<<<< HEAD
+      const layout = dayLayouts.get(`${c.id}:${day}`) || { lane: 0, totalLanes: 1 };
+      const laneWidth = 100 / layout.totalLanes;
+      const leftPct = laneWidth * layout.lane;
+      block.style.left = `calc(${leftPct}% + 4px)`;
+      block.style.right = `calc(${100 - leftPct - laneWidth}% + 4px)`;
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
       block.style.background = `${c.color}bb`;
       block.style.height = `calc(${span * 48}px - 8px)`;
       const course = document.createElement("strong");
@@ -285,6 +368,97 @@ function parseHashData() {
   }
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+function splitCsvLine(line) {
+  const out = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"' && line[i + 1] === '"') {
+      cur += '"';
+      i++;
+      continue;
+    }
+    if (ch === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+    if (ch === "," && !inQuotes) {
+      out.push(cur.trim());
+      cur = "";
+      continue;
+    }
+    cur += ch;
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function parseDaysTimes(raw) {
+  const input = (raw || "").toUpperCase();
+  const map = [
+    ["M", "Mon"],
+    ["T", "Tue"],
+    ["W", "Wed"],
+    ["R", "Thu"],
+    ["F", "Fri"],
+    ["S", "Sat"],
+    ["U", "Sun"],
+  ];
+  const days = map.filter(([abbr]) => input.includes(abbr)).map(([, day]) => day);
+
+  const match = input.match(/(\d{1,2}:\d{2}\s*[AP]M)\s*-\s*(\d{1,2}:\d{2}\s*[AP]M)/);
+  if (!match || !days.length) return null;
+  const to24 = (v) => {
+    const [hm, suffix] = v.trim().split(/\s+/);
+    let [h, m] = hm.split(":").map(Number);
+    if (suffix === "PM" && h !== 12) h += 12;
+    if (suffix === "AM" && h === 12) h = 0;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
+  return { days, start: to24(match[1]), end: to24(match[2]) };
+}
+
+function importUniversityCsv(text) {
+  const lines = text.split(/\r?\n/).filter(Boolean);
+  if (lines.length < 2) throw new Error("CSV has no data rows.");
+  const headers = splitCsvLine(lines[0]).map((h) => h.toLowerCase());
+  const pick = (...names) => headers.findIndex((h) => names.includes(h));
+  const idxCourse = pick("course", "subject title", "title");
+  const idxInstructor = pick("instructor", "instructor(s)");
+  const idxLocation = pick("building & room", "location", "room");
+  const idxDaysTimes = pick("days & times", "meeting time", "days/times");
+
+  if (idxCourse === -1 || idxDaysTimes === -1) {
+    throw new Error("CSV format missing required columns.");
+  }
+
+  const imported = [];
+  for (const line of lines.slice(1)) {
+    const cols = splitCsvLine(line);
+    const schedule = parseDaysTimes(cols[idxDaysTimes] || "");
+    if (!schedule) continue;
+    const normalized = normalizeClass({
+      id: crypto.randomUUID(),
+      course: cols[idxCourse] || "Course",
+      instructor: idxInstructor >= 0 ? cols[idxInstructor] : "",
+      location: idxLocation >= 0 ? cols[idxLocation] : "",
+      days: schedule.days,
+      startMin: toMinutes(schedule.start),
+      endMin: toMinutes(schedule.end),
+      color: "#6f7eff",
+    });
+    if (normalized) imported.push(normalized);
+  }
+  return imported;
+}
+
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
 function copyShareLink() {
   const encoded = btoa(JSON.stringify(state.classes));
   const link = `${location.origin}${location.pathname}#data=${encodeURIComponent(encoded)}`;
@@ -364,6 +538,30 @@ els.importFile.addEventListener("change", async () => {
 });
 
 els.exportCsv.addEventListener("click", exportCSV);
+<<<<<<< HEAD
+<<<<<<< HEAD
+els.importUniversityCsv.addEventListener("click", () => els.importUniversityFile.click());
+els.importUniversityFile.addEventListener("change", async () => {
+  const file = els.importUniversityFile.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const imported = importUniversityCsv(text);
+    if (!imported.length) throw new Error("No parsable rows");
+    state.classes.push(...imported);
+    save();
+    rerender();
+    setStatus(`Imported ${imported.length} classes from university CSV.`);
+  } catch {
+    setStatus("Could not import university CSV. Check column names and time format.", true);
+  } finally {
+    els.importUniversityFile.value = "";
+  }
+});
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
 els.shareLink.addEventListener("click", copyShareLink);
 els.clearAll.addEventListener("click", () => {
   state.classes = [];
