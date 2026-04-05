@@ -89,6 +89,44 @@ function annotateConflicts(classes) {
   });
 }
 
+function computeDayLayouts(classes) {
+  const layout = new Map();
+  const classesByDay = new Map(DAYS.map((d) => [d, []]));
+
+  for (const c of classes) {
+    for (const day of c.days) {
+      if (classesByDay.has(day)) {
+        classesByDay.get(day).push(c);
+      }
+    }
+  }
+
+  for (const day of DAYS) {
+    const dayClasses = classesByDay.get(day).sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
+    const laneEndTimes = [];
+
+    for (const c of dayClasses) {
+      let lane = laneEndTimes.findIndex((endMin) => endMin <= c.startMin);
+      if (lane === -1) {
+        lane = laneEndTimes.length;
+        laneEndTimes.push(c.endMin);
+      } else {
+        laneEndTimes[lane] = c.endMin;
+      }
+      layout.set(`${c.id}:${day}`, { lane });
+    }
+
+    const totalLanes = Math.max(1, laneEndTimes.length);
+    for (const c of dayClasses) {
+      const key = `${c.id}:${day}`;
+      const current = layout.get(key);
+      layout.set(key, { ...current, totalLanes });
+    }
+  }
+
+  return layout;
+}
+
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.classes));
 }
@@ -162,6 +200,7 @@ function renderCalendar() {
   const startMin = range.startMin;
   const endMin = range.endMin;
   const columnCount = DAYS.length + 1;
+  const dayLayouts = computeDayLayouts(classes);
 
   const grid = document.createElement("div");
   grid.className = "grid";
@@ -215,6 +254,11 @@ function renderCalendar() {
 
       const block = document.createElement("div");
       block.className = `block ${c.conflict ? "conflict" : ""}`;
+      const layout = dayLayouts.get(`${c.id}:${day}`) || { lane: 0, totalLanes: 1 };
+      const laneWidth = 100 / layout.totalLanes;
+      const leftPct = laneWidth * layout.lane;
+      block.style.left = `calc(${leftPct}% + 4px)`;
+      block.style.right = `calc(${100 - leftPct - laneWidth}% + 4px)`;
       block.style.background = `${c.color}bb`;
       block.style.height = `calc(${span * 48}px - 8px)`;
       const course = document.createElement("strong");
