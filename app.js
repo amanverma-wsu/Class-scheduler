@@ -19,10 +19,15 @@ const els = {
   exportJson: document.getElementById("export-json"),
   importJson: document.getElementById("import-json"),
   exportCsv: document.getElementById("export-csv"),
+<<<<<<< HEAD
   importUniversityCsv: document.getElementById("import-university-csv"),
   shareLink: document.getElementById("share-link"),
   clearAll: document.getElementById("clear-all"),
   importUniversityFile: document.getElementById("import-university-file"),
+=======
+  shareLink: document.getElementById("share-link"),
+  clearAll: document.getElementById("clear-all"),
+>>>>>>> origin/main
 };
 
 function setStatus(msg, isError = false) {
@@ -89,6 +94,7 @@ function annotateConflicts(classes) {
   });
 }
 
+<<<<<<< HEAD
 function computeDayLayouts(classes) {
   const layout = new Map();
   const classesByDay = new Map(DAYS.map((d) => [d, []]));
@@ -127,6 +133,8 @@ function computeDayLayouts(classes) {
   return layout;
 }
 
+=======
+>>>>>>> origin/main
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.classes));
 }
@@ -199,8 +207,11 @@ function renderCalendar() {
   const range = getDisplayRange(classes);
   const startMin = range.startMin;
   const endMin = range.endMin;
+<<<<<<< HEAD
   const columnCount = DAYS.length + 1;
   const dayLayouts = computeDayLayouts(classes);
+=======
+>>>>>>> origin/main
 
   const grid = document.createElement("div");
   grid.className = "grid";
@@ -248,17 +259,24 @@ function renderCalendar() {
 
       const rowIndex = 1 + startRow;
       const gridColIndex = 2 + col;
+<<<<<<< HEAD
       const index = rowIndex * columnCount + (gridColIndex - 1);
+=======
+      const index = rowIndex * 6 + (gridColIndex - 1);
+>>>>>>> origin/main
       const cell = grid.children[index];
       if (!cell) continue;
 
       const block = document.createElement("div");
       block.className = `block ${c.conflict ? "conflict" : ""}`;
+<<<<<<< HEAD
       const layout = dayLayouts.get(`${c.id}:${day}`) || { lane: 0, totalLanes: 1 };
       const laneWidth = 100 / layout.totalLanes;
       const leftPct = laneWidth * layout.lane;
       block.style.left = `calc(${leftPct}% + 4px)`;
       block.style.right = `calc(${100 - leftPct - laneWidth}% + 4px)`;
+=======
+>>>>>>> origin/main
       block.style.background = `${c.color}bb`;
       block.style.height = `calc(${span * 48}px - 8px)`;
       const course = document.createElement("strong");
@@ -332,6 +350,7 @@ function parseHashData() {
   }
 }
 
+<<<<<<< HEAD
 function splitCsvLine(line) {
   const out = [];
   let cur = "";
@@ -417,6 +436,8 @@ function importUniversityCsv(text) {
   return imported;
 }
 
+=======
+>>>>>>> origin/main
 function copyShareLink() {
   const encoded = btoa(JSON.stringify(state.classes));
   const link = `${location.origin}${location.pathname}#data=${encodeURIComponent(encoded)}`;
@@ -496,6 +517,7 @@ els.importFile.addEventListener("change", async () => {
 });
 
 els.exportCsv.addEventListener("click", exportCSV);
+<<<<<<< HEAD
 els.importUniversityCsv.addEventListener("click", () => els.importUniversityFile.click());
 els.importUniversityFile.addEventListener("change", async () => {
   const file = els.importUniversityFile.files?.[0];
@@ -514,6 +536,8 @@ els.importUniversityFile.addEventListener("change", async () => {
     els.importUniversityFile.value = "";
   }
 });
+=======
+>>>>>>> origin/main
 els.shareLink.addEventListener("click", copyShareLink);
 els.clearAll.addEventListener("click", () => {
   state.classes = [];
