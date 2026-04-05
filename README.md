@@ -32,6 +32,14 @@ python3 -m http.server 8000
 
 Then open <http://localhost:8000>.
 
+## Maintenance checks
+
+Run this before committing to ensure no unresolved merge markers are in app files:
+
+```bash
+./scripts/check-merge-markers.sh
+```
+
 ## Next Ideas
 
 - Google/Outlook calendar export (ICS)
