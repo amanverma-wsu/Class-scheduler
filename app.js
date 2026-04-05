@@ -359,28 +359,43 @@ function splitCsvLine(line) {
 }
 
 function parseDaysTimes(raw) {
-  const input = (raw || "").toUpperCase();
-  const map = [
-    ["M", "Mon"],
-    ["T", "Tue"],
-    ["W", "Wed"],
-    ["R", "Thu"],
-    ["F", "Fri"],
-    ["S", "Sat"],
-    ["U", "Sun"],
-  ];
-  const days = map.filter(([abbr]) => input.includes(abbr)).map(([, day]) => day);
-
+  const input = (raw || "").trim().toUpperCase();
   const match = input.match(/(\d{1,2}:\d{2}\s*[AP]M)\s*-\s*(\d{1,2}:\d{2}\s*[AP]M)/);
-  if (!match || !days.length) return null;
+  const dayChunk = input.slice(0, match ? match.index : input.length).replace(/[^A-Z]/g, "");
+  const days = [];
+
+  for (let i = 0; i < dayChunk.length; i++) {
+    const char = dayChunk[i];
+    const next = dayChunk[i + 1];
+    if (char === "M") days.push("Mon");
+    if (char === "W") days.push("Wed");
+    if (char === "F") days.push("Fri");
+    if (char === "R" || (char === "T" && next === "H")) {
+      days.push("Thu");
+      if (char === "T" && next === "H") i++;
+      continue;
+    }
+    if (char === "T" && next !== "H") days.push("Tue");
+    if (char === "S") days.push("Sat");
+    if (char === "U") days.push("Sun");
+  }
+  const uniqueDays = [...new Set(days)];
+
+  if (!match || !uniqueDays.length) return null;
   const to24 = (v) => {
-    const [hm, suffix] = v.trim().split(/\s+/);
-    let [h, m] = hm.split(":").map(Number);
+    const timeMatch = v.trim().match(/(\d{1,2}):(\d{2})\s*([AP]M)/);
+    if (!timeMatch) return null;
+    let h = Number(timeMatch[1]);
+    const m = Number(timeMatch[2]);
+    const suffix = timeMatch[3];
     if (suffix === "PM" && h !== 12) h += 12;
     if (suffix === "AM" && h === 12) h = 0;
     return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
-  return { days, start: to24(match[1]), end: to24(match[2]) };
+  const start = to24(match[1]);
+  const end = to24(match[2]);
+  if (!start || !end) return null;
+  return { days: uniqueDays, start, end };
 }
 
 function importUniversityCsv(text) {
