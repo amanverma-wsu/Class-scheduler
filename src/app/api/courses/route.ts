@@ -113,13 +113,13 @@ function buildURLs(campus: string, term: string, year: string, subject: string):
   const Tl = encodeURIComponent(term.toLowerCase());
   const Y = encodeURIComponent(year);
 
-  // Subjects with underscores (CPT_S) need special handling:
-  // WSU's URL router may reject raw underscores in path segments.
-  // Try: pre-encoded %5F first, then raw _, then stripped (CPTS).
+  // For CPT_S, WSU may store it as: CPT_S, CPTS, or "CPT S" (space).
+  // The underscore in a URL path segment is sometimes rejected by routers.
   const subVariants = Array.from(new Set([
-    subject.replace(/_/g, '%5F'), // CPT%5FS  (encoded underscore)
-    subject,                      // CPT_S     (raw)
-    subject.replace(/_/g, ''),    // CPTS      (no underscore)
+    subject.replace(/_/g, '%5F'),    // CPT%5FS  — pre-encoded underscore
+    subject,                         // CPT_S    — raw underscore
+    subject.replace(/_/g, '%20'),    // CPT%20S  — space-encoded (WSU may use space)
+    subject.replace(/_/g, ''),       // CPTS     — no separator
   ]));
 
   return subVariants.flatMap(sub => [
