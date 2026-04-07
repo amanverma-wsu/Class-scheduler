@@ -8,6 +8,7 @@ import WeeklyCalendar from '@/components/WeeklyCalendar';
 import CourseList from '@/components/CourseList';
 import AddClassModal from '@/components/AddClassModal';
 import CourseDetailModal from '@/components/CourseDetailModal';
+import CourseCatalogModal from '@/components/CourseCatalogModal';
 import StatsBar from '@/components/StatsBar';
 import SemesterManager from '@/components/SemesterManager';
 
@@ -19,6 +20,7 @@ export default function Home() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [detailCourse, setDetailCourse] = useState<Course | null>(null);
+  const [showCatalog, setShowCatalog] = useState(false);
   const [search, setSearch] = useState('');
   const [darkMode, setDarkMode] = useState(false);
 
@@ -193,7 +195,16 @@ export default function Home() {
                 {darkMode ? '☀️' : '🌙'}
               </button>
 
-              {/* Add class */}
+              {/* Browse catalog */}
+              <button
+                onClick={() => setShowCatalog(true)}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-lg border-2 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                title="Browse WSU course catalog"
+              >
+                🎓 Browse
+              </button>
+
+              {/* Add class manually */}
               <button
                 onClick={() => { setEditingCourse(null); setShowAddModal(true); }}
                 className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
@@ -297,6 +308,16 @@ export default function Home() {
           onEdit={handleEditCourse}
           onDelete={handleDeleteCourse}
           onClose={() => setDetailCourse(null)}
+        />
+      )}
+
+      {showCatalog && (
+        <CourseCatalogModal
+          existingCourses={courses}
+          onAdd={course => {
+            handleSaveCourse(course);
+          }}
+          onClose={() => setShowCatalog(false)}
         />
       )}
     </div>
