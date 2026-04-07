@@ -1,7 +1,8 @@
 import { AppState, Semester, Course } from './types';
 import { generateId, COURSE_COLORS } from './utils';
 
-const STORAGE_KEY = 'class-scheduler-data';
+// Bump this version when default data changes — forces a fresh load
+const STORAGE_KEY = 'class-scheduler-data-v2';
 
 export const DEFAULT_COURSES: Course[] = [
   {

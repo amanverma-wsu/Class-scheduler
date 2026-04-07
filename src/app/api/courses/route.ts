@@ -105,15 +105,21 @@ function parseDayTime(dayTime: string): { days: string[]; startTime: string; end
 const cache = new Map<string, { data: CatalogCourse[]; timestamp: number }>();
 const CACHE_TTL = 1000 * 60 * 30; // 30 min
 
-// URL formats to try in order
+// URL formats to try in order — handles CPT_S underscore variants and casing
 function buildURLs(campus: string, term: string, year: string, subject: string): string[] {
   const base = 'https://schedules.wsu.edu/api/Data/GetSectionListDTO';
-  const enc = encodeURIComponent;
-  return [
-    `${base}/${enc(campus)}/${enc(term)}/${enc(year)}/${enc(subject)}/tocsv`,
-    `${base}/${enc(campus)}/${enc(term.toLowerCase())}/${enc(year)}/${enc(subject)}/tocsv`,
-    `${base}/${enc(campus.toLowerCase())}/${enc(term)}/${enc(year)}/${enc(subject)}/tocsv`,
-  ];
+  // For subjects like CPT_S, also try without underscore (CPTS) and encoded underscore
+  const subVariants = Array.from(new Set([
+    subject,
+    subject.replace(/_/g, ''),          // CPT_S → CPTS
+    subject.replace(/_/g, '%5F'),       // CPT_S → CPT%5FS (pre-encoded)
+  ]));
+  const urls: string[] = [];
+  for (const sub of subVariants) {
+    urls.push(`${base}/${encodeURIComponent(campus)}/${encodeURIComponent(term)}/${encodeURIComponent(year)}/${sub}/tocsv`);
+    urls.push(`${base}/${encodeURIComponent(campus)}/${term.toLowerCase()}/${encodeURIComponent(year)}/${sub}/tocsv`);
+  }
+  return urls;
 }
 
 function parseCSV(csv: string, campus: string): CatalogCourse[] {
