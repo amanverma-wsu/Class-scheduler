@@ -76,7 +76,7 @@ export default function CourseCatalogModal({ existingCourses, onAdd, onClose }: 
       const res = await fetch(`/api/courses?${params}`);
       const data = await res.json();
       if (data.error && !data.courses?.length) {
-        setError('Could not connect to WSU course catalog. Try again later.');
+        setError(`WSU catalog error: ${data.error}`);
       }
       setResults(data.courses ?? []);
     } catch {
