@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Class Scheduler</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Class Scheduler</h1>
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <p class="subtitle">Plan your week, track conflicts, and share schedules instantly.</p>
+    </header>
+
+    <main>
+      <section class="panel glass">
+=======
+=======
+>>>>>>> origin/main
+      <p>Build, track, and share your weekly class plan for free.</p>
+    </header>
+
+    <main>
+      <section class="panel">
+<<<<<<< HEAD
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
+        <h2>Add a class</h2>
+        <form id="class-form">
+          <label>
+            Course
+            <input required id="course" placeholder="CPTS 121" />
+          </label>
+
+          <label>
+            Instructor
+            <input id="instructor" placeholder="Dr. Kim" />
+          </label>
+
+          <label>
+            Location
+            <input id="location" placeholder="Todd 216" />
+          </label>
+
+          <div class="row">
+            <label>
+              Start
+              <input required id="start" type="time" />
+            </label>
+            <label>
+              End
+              <input required id="end" type="time" />
+            </label>
+          </div>
+
+          <fieldset>
+            <legend>Days</legend>
+            <label><input type="checkbox" value="Mon" />Mon</label>
+            <label><input type="checkbox" value="Tue" />Tue</label>
+            <label><input type="checkbox" value="Wed" />Wed</label>
+            <label><input type="checkbox" value="Thu" />Thu</label>
+            <label><input type="checkbox" value="Fri" />Fri</label>
+            <label><input type="checkbox" value="Sat" />Sat</label>
+            <label><input type="checkbox" value="Sun" />Sun</label>
+          </fieldset>
+
+          <label>
+            Color
+            <input id="color" type="color" value="#6f7eff" />
+          </label>
+
+          <button type="submit">Add class</button>
+        </form>
+
+        <div class="actions">
+          <button id="export-json">Export JSON</button>
+          <button id="import-json">Import JSON</button>
+<<<<<<< HEAD
+<<<<<<< HEAD
+          <button id="import-university-csv">Import University CSV</button>
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
+          <button id="export-csv">Export CSV</button>
+          <button id="share-link">Copy Share Link</button>
+          <button id="clear-all" class="danger">Clear All</button>
+          <input id="import-file" type="file" accept="application/json" hidden />
+<<<<<<< HEAD
+<<<<<<< HEAD
+          <input id="import-university-file" type="file" accept=".csv,text/csv" hidden />
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
+        </div>
+
+        <p id="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Your classes</h2>
+        <ul id="class-list"></ul>
+      </section>
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+      <section class="panel">
+        <h2>University connect</h2>
+        <p class="class-meta">
+          Import your upcoming courses by exporting your university schedule as CSV and uploading it here.
+        </p>
+        <ol class="class-meta">
+          <li>Open your university schedule page.</li>
+          <li>Use CSV export (e.g., WSU Schedule of Classes has “Export Report as CSV”).</li>
+          <li>Upload the file with the button above.</li>
+        </ol>
+      </section>
+
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
+      <section class="panel full">
+        <h2>Weekly view</h2>
+        <div id="calendar" class="calendar"></div>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

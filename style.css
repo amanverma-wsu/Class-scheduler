@@ -1,0 +1,329 @@
+:root {
+<<<<<<< HEAD
+<<<<<<< HEAD
+  --bg: #f3f6ff;
+  --panel: #ffffff;
+  --text: #1b1f3b;
+  --muted: #5a6385;
+  --accent: #5b5ce2;
+  --accent-2: #8d5cf6;
+  --danger: #d73c56;
+  --border: #dbe1ff;
+=======
+=======
+>>>>>>> origin/main
+  --bg: #0f1115;
+  --panel: #171b22;
+  --text: #e8edf5;
+  --muted: #9aa6b2;
+  --accent: #6f7eff;
+  --danger: #ff5b6b;
+  --border: #283141;
+<<<<<<< HEAD
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+<<<<<<< HEAD
+<<<<<<< HEAD
+  background: radial-gradient(circle at 20% 0%, #e5e9ff 0%, var(--bg) 45%);
+=======
+  background: var(--bg);
+>>>>>>> origin/main
+=======
+  background: var(--bg);
+>>>>>>> origin/main
+  color: var(--text);
+}
+
+header {
+<<<<<<< HEAD
+<<<<<<< HEAD
+  padding: 1.2rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+=======
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+>>>>>>> origin/main
+=======
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+>>>>>>> origin/main
+}
+
+header h1 {
+  margin: 0 0 0.25rem;
+}
+
+header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+<<<<<<< HEAD
+<<<<<<< HEAD
+.subtitle {
+  font-size: 0.95rem;
+}
+
+=======
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
+main {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  padding: 1rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+<<<<<<< HEAD
+<<<<<<< HEAD
+  border-radius: 16px;
+  padding: 1rem;
+  box-shadow: 0 6px 30px rgba(63, 85, 198, 0.08);
+}
+
+.glass {
+  background: linear-gradient(180deg, #ffffff, #f7f8ff);
+=======
+  border-radius: 12px;
+  padding: 1rem;
+>>>>>>> origin/main
+=======
+  border-radius: 12px;
+  padding: 1rem;
+>>>>>>> origin/main
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+form,
+.actions {
+  display: grid;
+  gap: 0.6rem;
+}
+
+label,
+fieldset {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+input,
+button {
+<<<<<<< HEAD
+<<<<<<< HEAD
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+=======
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #10141b;
+>>>>>>> origin/main
+=======
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #10141b;
+>>>>>>> origin/main
+  color: var(--text);
+  padding: 0.55rem 0.65rem;
+}
+
+button {
+  cursor: pointer;
+  font-weight: 600;
+<<<<<<< HEAD
+<<<<<<< HEAD
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  color: #fff;
+  border: none;
+}
+
+button:hover {
+  filter: brightness(1.06);
+}
+
+button.danger:hover {
+  filter: none;
+  background: var(--danger);
+}
+
+button.danger {
+  background: #fff0f3;
+  color: var(--danger);
+  border: 1px solid #ffc6d1;
+=======
+=======
+>>>>>>> origin/main
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button.danger:hover {
+  border-color: var(--danger);
+<<<<<<< HEAD
+>>>>>>> origin/main
+=======
+>>>>>>> origin/main
+}
+
+fieldset {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem;
+  grid-template-columns: repeat(4, auto);
+  align-items: center;
+}
+
+#status {
+  min-height: 1.2rem;
+  color: var(--muted);
+}
+
+#class-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.class-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem;
+<<<<<<< HEAD
+<<<<<<< HEAD
+  border: 1px solid #edf0ff;
+=======
+  border: 1px solid var(--border);
+>>>>>>> origin/main
+=======
+  border: 1px solid var(--border);
+>>>>>>> origin/main
+  border-left: 6px solid var(--accent);
+  border-radius: 10px;
+  align-items: center;
+}
+
+.class-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.calendar {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.grid {
+  display: grid;
+<<<<<<< HEAD
+<<<<<<< HEAD
+  grid-template-columns: 64px repeat(7, minmax(130px, 1fr));
+  min-width: 1080px;
+=======
+  grid-template-columns: 64px repeat(5, minmax(130px, 1fr));
+  min-width: 760px;
+>>>>>>> origin/main
+=======
+  grid-template-columns: 64px repeat(5, minmax(130px, 1fr));
+  min-width: 760px;
+>>>>>>> origin/main
+}
+
+.cell {
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  min-height: 48px;
+  padding: 0.35rem;
+  position: relative;
+}
+
+.cell.header {
+<<<<<<< HEAD
+<<<<<<< HEAD
+  background: #f8f9ff;
+=======
+  background: #131923;
+>>>>>>> origin/main
+=======
+  background: #131923;
+>>>>>>> origin/main
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.time {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 8px;
+  padding: 0.3rem;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  overflow: hidden;
+<<<<<<< HEAD
+<<<<<<< HEAD
+  border: 1px solid rgba(255, 255, 255, 0.55);
+=======
+  border: 1px solid rgba(255, 255, 255, 0.2);
+>>>>>>> origin/main
+=======
+  border: 1px solid rgba(255, 255, 255, 0.2);
+>>>>>>> origin/main
+}
+
+.block.conflict {
+  box-shadow: 0 0 0 2px var(--danger) inset;
+}
+
+.remove {
+<<<<<<< HEAD
+<<<<<<< HEAD
+  background: #fff;
+=======
+  background: transparent;
+>>>>>>> origin/main
+=======
+  background: transparent;
+>>>>>>> origin/main
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
