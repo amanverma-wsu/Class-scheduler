@@ -116,10 +116,10 @@ function buildURLs(campus: string, term: string, year: string, subject: string):
   // For CPT_S, WSU may store it as: CPT_S, CPTS, or "CPT S" (space).
   // The underscore in a URL path segment is sometimes rejected by routers.
   const subVariants = Array.from(new Set([
-    subject.replace(/_/g, '%5F'),    // CPT%5FS  — pre-encoded underscore
-    subject,                         // CPT_S    — raw underscore
-    subject.replace(/_/g, '%20'),    // CPT%20S  — space-encoded (WSU may use space)
-    subject.replace(/_/g, ''),       // CPTS     — no separator
+    subject.replace(/_/g, '%20'),    // CPT%20S  — WSU uses space internally ✓
+    subject.replace(/_/g, ''),       // CPTS     — also works ✓
+    subject,                         // CPT_S    — raw (returns 0 rows for CPT_S)
+    subject.replace(/_/g, '%5F'),    // CPT%5FS  — encoded (also 0 rows)
   ]));
 
   return subVariants.flatMap(sub => [
@@ -177,7 +177,9 @@ function parseCSV(csv: string, campus: string): CatalogCourse[] {
     const f = parseLine(lines[i]);
     const get = (index: number) => (index >= 0 ? f[index] ?? '' : '');
 
-    const prefix = get(iPrefix) || get(iSubject);
+    // WSU returns "CPT S" (space) in Prefix — normalize back to "CPT_S"
+    const rawPrefix = get(iPrefix) || get(iSubject);
+    const prefix = rawPrefix.replace(/\s+/g, '_').replace(/_$/, '').replace(/^_/, '');
     const courseNumber = get(iCourseNum);
     if (!prefix && !courseNumber) continue;
 
