@@ -21,7 +21,8 @@ export default function WeeklyCalendar({ courses, conflicts, onCourseClick }: We
   const totalHours = endHour - startHour;
   const gridHeight = totalHours * HOUR_HEIGHT;
 
-  const hours = Array.from({ length: totalHours + 1 }, (_, i) => startHour + i);
+  // totalHours grid lines: one per hour boundary including the last
+  const hours = Array.from({ length: totalHours }, (_, i) => startHour + i);
 
   function getCourseStyle(course: Course): React.CSSProperties {
     const startMin = timeToMinutes(course.timeSlot.startTime);
@@ -39,25 +40,37 @@ export default function WeeklyCalendar({ courses, conflicts, onCourseClick }: We
     return courses.filter(c => c.days.includes(day));
   }
 
-  // Simple overlap grouping for a day
-  function groupOverlappingCourses(dayCourses: Course[]): Course[][] {
+  // Group courses into columns so overlapping ones sit side-by-side.
+  // Returns map: courseId → { col, totalCols }
+  function buildColumnMap(dayCourses: Course[]): Map<string, { col: number; totalCols: number }> {
     const sorted = [...dayCourses].sort(
       (a, b) => timeToMinutes(a.timeSlot.startTime) - timeToMinutes(b.timeSlot.startTime)
     );
-    const groups: Course[][] = [];
+
+    // Each "slot" is a column that tracks the latest end time placed in it
+    const slots: number[] = []; // latest endTime in minutes per column
+    const colAssign = new Map<string, number>();
+
     for (const course of sorted) {
-      let placed = false;
-      for (const group of groups) {
-        const lastInGroup = group[group.length - 1];
-        if (timeToMinutes(lastInGroup.timeSlot.endTime) <= timeToMinutes(course.timeSlot.startTime)) {
-          group.push(course);
-          placed = true;
-          break;
-        }
+      const start = timeToMinutes(course.timeSlot.startTime);
+      const end = timeToMinutes(course.timeSlot.endTime);
+      // Find a free slot (one whose last course already ended)
+      const freeSlot = slots.findIndex(latestEnd => latestEnd <= start);
+      if (freeSlot >= 0) {
+        slots[freeSlot] = end;
+        colAssign.set(course.id, freeSlot);
+      } else {
+        colAssign.set(course.id, slots.length);
+        slots.push(end);
       }
-      if (!placed) groups.push([course]);
     }
-    return groups;
+
+    const totalCols = Math.max(slots.length, 1);
+    const result = new Map<string, { col: number; totalCols: number }>();
+    for (const course of dayCourses) {
+      result.set(course.id, { col: colAssign.get(course.id) ?? 0, totalCols });
+    }
+    return result;
   }
 
   return (
@@ -105,14 +118,7 @@ export default function WeeklyCalendar({ courses, conflicts, onCourseClick }: We
           {/* Day columns */}
           {DAYS_OF_WEEK.map(day => {
             const dayCourses = getDayColumns(day);
-            const groups = groupOverlappingCourses(dayCourses);
-            // Build a map: courseId -> { col, totalCols }
-            const colMap = new Map<string, { col: number; totalCols: number }>();
-            groups.forEach(group => {
-              group.forEach((course, idx) => {
-                colMap.set(course.id, { col: idx, totalCols: groups.length });
-              });
-            });
+            const colMap = buildColumnMap(dayCourses);
 
             return (
               <div
@@ -140,6 +146,7 @@ export default function WeeklyCalendar({ courses, conflicts, onCourseClick }: We
                     <button
                       key={course.id}
                       onClick={() => onCourseClick(course)}
+                      aria-label={`${course.courseCode}: ${course.name}${isConflict ? ' (time conflict)' : ''}`}
                       className="absolute rounded-lg p-1 text-white text-xs font-medium overflow-hidden hover:brightness-110 hover:shadow-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-1 text-left"
                       style={{
                         ...getCourseStyle(course),
@@ -148,7 +155,6 @@ export default function WeeklyCalendar({ courses, conflicts, onCourseClick }: We
                         opacity: 0.92,
                         ...(isConflict ? { outline: '2px solid #EF4444', outlineOffset: '-2px' } : {}),
                       }}
-                      title={`${course.courseCode}: ${course.name}`}
                     >
                       <div className="font-bold truncate leading-tight">{course.courseCode}</div>
                       <div className="truncate opacity-90 leading-tight hidden sm:block" style={{ fontSize: '10px' }}>

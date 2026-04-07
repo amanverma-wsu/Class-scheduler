@@ -122,7 +122,17 @@ export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return getDefaultState();
-    return JSON.parse(raw) as AppState;
+    const parsed = JSON.parse(raw) as AppState;
+    // Validate minimum required shape — fall back to defaults if corrupt
+    if (
+      !parsed ||
+      !Array.isArray(parsed.semesters) ||
+      parsed.semesters.length === 0 ||
+      !parsed.activeSemesterId
+    ) {
+      return getDefaultState();
+    }
+    return parsed;
   } catch {
     return getDefaultState();
   }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Course, DayOfWeek } from '@/lib/types';
-import { DAYS_OF_WEEK, COURSE_COLORS, generateId, getNextColor } from '@/lib/utils';
+import { DAYS_OF_WEEK, COURSE_COLORS, generateId, getNextColor, timeToMinutes } from '@/lib/utils';
 
 interface AddClassModalProps {
   existingCourse?: Course | null;
@@ -72,7 +72,7 @@ export default function AddClassModal({ existingCourse, existingColors, onSave, 
     if (form.days.length === 0) e.days = 'Select at least one day';
     if (!form.startTime) e.startTime = 'Start time required';
     if (!form.endTime) e.endTime = 'End time required';
-    if (form.startTime >= form.endTime) e.endTime = 'End time must be after start time';
+    if (timeToMinutes(form.startTime) >= timeToMinutes(form.endTime)) e.endTime = 'End time must be after start time';
     if (form.units < 0.5 || form.units > 20) e.units = 'Units must be between 0.5 and 20';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -94,8 +94,8 @@ export default function AddClassModal({ existingCourse, existingColors, onSave, 
       section: form.section.trim(),
       color: form.color,
       availability: form.availability,
-      openSeats: form.openSeats ? parseInt(form.openSeats) : undefined,
-      totalSeats: form.totalSeats ? parseInt(form.totalSeats) : undefined,
+      openSeats: form.openSeats ? parseInt(form.openSeats, 10) : undefined,
+      totalSeats: form.totalSeats ? parseInt(form.totalSeats, 10) : undefined,
       notes: form.notes.trim() || undefined,
     };
     onSave(course);
@@ -281,6 +281,8 @@ export default function AddClassModal({ existingCourse, existingColors, onSave, 
                     outlineOffset: '2px',
                   }}
                   title={color}
+                  aria-label={`Select color ${color}`}
+                  aria-pressed={form.color === color}
                 />
               ))}
             </div>
