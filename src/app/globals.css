@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode (Tailwind v4 defaults to media query) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme inline {
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }

@@ -108,7 +108,6 @@ export default function CourseCatalogModal({ existingCourses, onAdd, onClose }: 
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[90vh]">
         {/* Header */}
