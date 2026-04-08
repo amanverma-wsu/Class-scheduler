@@ -24,6 +24,7 @@ export default function Home() {
   const [showCatalog, setShowCatalog] = useState(false);
   const [search, setSearch] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [urgentTaskCount, setUrgentTaskCount] = useState(0);
 
   // Load from localStorage
   useEffect(() => {
@@ -32,6 +33,9 @@ export default function Home() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const savedDark = localStorage.getItem('dark-mode');
     setDarkMode(savedDark !== null ? savedDark === 'true' : prefersDark);
+    // Restore last known urgent task count for badge display
+    const saved = parseInt(localStorage.getItem('canvas-urgent-count') ?? '0', 10);
+    if (saved > 0) setUrgentTaskCount(saved);
   }, []);
 
   // Persist state
@@ -158,13 +162,18 @@ export default function Home() {
                   <button
                     key={v}
                     onClick={() => setView(v)}
-                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    className={`relative px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                       view === v
                         ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                     }`}
                   >
-                    {v === 'calendar' ? 'Cal' : v === 'list' ? 'List' : '✓ Tasks'}
+                    {v === 'calendar' ? 'Cal' : v === 'list' ? 'List' : 'Tasks'}
+                    {v === 'tasks' && urgentTaskCount > 0 && (
+                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center leading-none">
+                        {urgentTaskCount > 99 ? '99+' : urgentTaskCount}
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -283,7 +292,7 @@ export default function Home() {
             />
           </div>
         )}
-        {view === 'tasks' && <TasksPanel />}
+        {view === 'tasks' && <TasksPanel onUrgentCount={setUrgentTaskCount} />}
       </main>
 
       {/* Modals */}
