@@ -39,3 +39,14 @@ export interface ConflictInfo {
   courseB: Course;
   conflictDays: DayOfWeek[];
 }
+
+export type TaskType = 'assignment' | 'quiz' | 'discussion' | 'event' | 'other';
+
+export interface Task {
+  id: string;
+  title: string;
+  dueDate: string;    // ISO datetime string
+  courseName: string; // extracted from iCal DESCRIPTION
+  url: string;        // link back to Canvas
+  type: TaskType;
+}

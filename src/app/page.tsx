@@ -11,8 +11,9 @@ import CourseDetailModal from '@/components/CourseDetailModal';
 import CourseCatalogModal from '@/components/CourseCatalogModal';
 import StatsBar from '@/components/StatsBar';
 import SemesterManager from '@/components/SemesterManager';
+import TasksPanel from '@/components/TasksPanel';
 
-type ViewMode = 'calendar' | 'list';
+type ViewMode = 'calendar' | 'list' | 'tasks';
 
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
@@ -153,26 +154,19 @@ export default function Home() {
             <div className="flex items-center gap-2 flex-shrink-0">
               {/* View toggle */}
               <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
-                <button
-                  onClick={() => setView('calendar')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    view === 'calendar'
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-                >
-                  Cal
-                </button>
-                <button
-                  onClick={() => setView('list')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                    view === 'list'
-                      ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                  }`}
-                >
-                  List
-                </button>
+                {(['calendar', 'list', 'tasks'] as ViewMode[]).map(v => (
+                  <button
+                    key={v}
+                    onClick={() => setView(v)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                      view === v
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    {v === 'calendar' ? 'Cal' : v === 'list' ? 'List' : '✓ Tasks'}
+                  </button>
+                ))}
               </div>
 
               {/* Export */}
@@ -263,14 +257,15 @@ export default function Home() {
           </div>
         )}
 
-        {/* Calendar / List */}
-        {view === 'calendar' ? (
+        {/* Calendar / List / Tasks */}
+        {view === 'calendar' && (
           <WeeklyCalendar
             courses={filteredCourses}
             conflicts={conflicts}
             onCourseClick={handleCourseClick}
           />
-        ) : (
+        )}
+        {view === 'list' && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-semibold text-gray-900 dark:text-white">
@@ -288,6 +283,7 @@ export default function Home() {
             />
           </div>
         )}
+        {view === 'tasks' && <TasksPanel />}
       </main>
 
       {/* Modals */}
