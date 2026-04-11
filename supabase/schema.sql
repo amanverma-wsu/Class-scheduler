@@ -45,7 +45,11 @@ alter table public.semesters     enable row level security;
 alter table public.courses        enable row level security;
 alter table public.user_settings  enable row level security;
 
--- Users can only read/write their own rows
+-- Drop before recreate so this script is safe to re-run
+drop policy if exists "own semesters"  on public.semesters;
+drop policy if exists "own courses"    on public.courses;
+drop policy if exists "own settings"   on public.user_settings;
+
 create policy "own semesters"    on public.semesters    for all using (auth.uid() = user_id);
 create policy "own courses"      on public.courses       for all using (auth.uid() = user_id);
 create policy "own settings"     on public.user_settings for all using (auth.uid() = user_id);
