@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Course, Semester, AppState } from '@/lib/types';
+import type { User } from '@supabase/supabase-js';
 import { detectConflicts, getTotalUnits } from '@/lib/utils';
 import { loadState, saveState, exportToCSV } from '@/lib/storage';
+import { createClient } from '@/lib/supabase/client';
+import { loadUserSchedule, saveUserSchedule } from '@/lib/supabase/db';
 import WeeklyCalendar from '@/components/WeeklyCalendar';
 import CourseList from '@/components/CourseList';
 import AddClassModal from '@/components/AddClassModal';
@@ -17,6 +20,7 @@ type ViewMode = 'calendar' | 'list' | 'tasks';
 
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [view, setView] = useState<ViewMode>('calendar');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
@@ -25,29 +29,70 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [urgentTaskCount, setUrgentTaskCount] = useState(0);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const supabaseSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load from localStorage
+  // Initial load: localStorage first, then Supabase cloud override
   useEffect(() => {
-    const loaded = loadState();
-    setState(loaded);
+    const local = loadState();
+    setState(local);
+
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const savedDark = localStorage.getItem('dark-mode');
     setDarkMode(savedDark !== null ? savedDark === 'true' : prefersDark);
-    // Restore last known urgent task count for badge display
-    const saved = parseInt(localStorage.getItem('canvas-urgent-count') ?? '0', 10);
-    if (saved > 0) setUrgentTaskCount(saved);
+
+    const savedCount = parseInt(localStorage.getItem('canvas-urgent-count') ?? '0', 10);
+    if (savedCount > 0) setUrgentTaskCount(savedCount);
+
+    // Check Supabase auth and load cloud data
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user: u } }) => {
+      setUser(u);
+      if (u) {
+        const cloud = await loadUserSchedule(supabase);
+        if (cloud) setState(cloud);
+      }
+    });
+
+    // Listen for auth changes (sign in / sign out)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const u = session?.user ?? null;
+      setUser(u);
+      if (event === 'SIGNED_IN' && u) {
+        const cloud = await loadUserSchedule(supabase);
+        if (cloud) setState(cloud);
+      }
+      if (event === 'SIGNED_OUT') {
+        setState(loadState()); // fall back to localStorage
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Persist state
+  // Persist to localStorage on every change; debounce Supabase saves
   useEffect(() => {
-    if (state) saveState(state);
-  }, [state]);
+    if (!state) return;
+    saveState(state);
+
+    if (user) {
+      if (supabaseSaveRef.current) clearTimeout(supabaseSaveRef.current);
+      supabaseSaveRef.current = setTimeout(() => {
+        saveUserSchedule(createClient(), state);
+      }, 1500);
+    }
+  }, [state, user]);
 
   // Dark mode
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
     localStorage.setItem('dark-mode', String(darkMode));
   }, [darkMode]);
+
+  async function handleSignOut() {
+    setShowUserMenu(false);
+    await createClient().auth.signOut();
+  }
 
   const activeSemester: Semester | undefined = state?.semesters.find(
     s => s.id === state.activeSemesterId
@@ -104,10 +149,6 @@ export default function Home() {
     setEditingCourse(course);
     setDetailCourse(null);
     setShowAddModal(true);
-  }
-
-  function handleCourseClick(course: Course) {
-    setDetailCourse(course);
   }
 
   if (!state) {
@@ -207,7 +248,7 @@ export default function Home() {
                 🎓 Browse
               </button>
 
-              {/* Add class manually */}
+              {/* Add class */}
               <button
                 onClick={() => { setEditingCourse(null); setShowAddModal(true); }}
                 className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm"
@@ -215,6 +256,36 @@ export default function Home() {
                 <span className="text-base leading-none">+</span>
                 <span className="hidden sm:inline">Add Class</span>
               </button>
+
+              {/* User avatar / menu */}
+              {user && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(v => !v)}
+                    className="w-8 h-8 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center hover:bg-blue-700 transition-colors"
+                    title={user.email ?? 'Account'}
+                  >
+                    {(user.email ?? 'U')[0].toUpperCase()}
+                  </button>
+                  {showUserMenu && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowUserMenu(false)} />
+                      <div className="absolute right-0 top-10 z-50 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-1 overflow-hidden">
+                        <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-800">
+                          <p className="text-xs font-medium text-gray-900 dark:text-white truncate">{user.email}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">Signed in</p>
+                        </div>
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        >
+                          Sign out
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -222,7 +293,6 @@ export default function Home() {
 
       {/* Main content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">
-        {/* Semester tabs */}
         <SemesterManager
           semesters={state.semesters}
           activeSemesterId={state.activeSemesterId}
@@ -233,25 +303,17 @@ export default function Home() {
           })}
           onRename={(id, name) => setState(prev => {
             if (!prev) return prev;
-            return {
-              ...prev,
-              semesters: prev.semesters.map(s => s.id === id ? { ...s, name } : s),
-            };
+            return { ...prev, semesters: prev.semesters.map(s => s.id === id ? { ...s, name } : s) };
           })}
           onDelete={id => setState(prev => {
             if (!prev) return prev;
             const remaining = prev.semesters.filter(s => s.id !== id);
-            return {
-              semesters: remaining,
-              activeSemesterId: remaining[0]?.id ?? '',
-            };
+            return { semesters: remaining, activeSemesterId: remaining[0]?.id ?? '' };
           })}
         />
 
-        {/* Stats */}
         <StatsBar courses={courses} />
 
-        {/* Conflict banner */}
         {conflicts.length > 0 && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3 flex items-start gap-3">
             <span className="text-red-500 text-xl flex-shrink-0">⚠</span>
@@ -266,13 +328,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Calendar / List / Tasks */}
         {view === 'calendar' && (
-          <WeeklyCalendar
-            courses={filteredCourses}
-            conflicts={conflicts}
-            onCourseClick={handleCourseClick}
-          />
+          <WeeklyCalendar courses={filteredCourses} conflicts={conflicts} onCourseClick={c => setDetailCourse(c)} />
         )}
         {view === 'list' && (
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
@@ -281,21 +338,14 @@ export default function Home() {
                 {filteredCourses.length} class{filteredCourses.length !== 1 ? 'es' : ''}
                 {search && ` matching "${search}"`}
               </h2>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {getTotalUnits(courses)} total units
-              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{getTotalUnits(courses)} total units</span>
             </div>
-            <CourseList
-              courses={filteredCourses}
-              conflictIds={conflictIds}
-              onCourseClick={handleCourseClick}
-            />
+            <CourseList courses={filteredCourses} conflictIds={conflictIds} onCourseClick={c => setDetailCourse(c)} />
           </div>
         )}
         {view === 'tasks' && <TasksPanel onUrgentCount={setUrgentTaskCount} />}
       </main>
 
-      {/* Modals */}
       {showAddModal && (
         <AddClassModal
           existingCourse={editingCourse}
@@ -304,7 +354,6 @@ export default function Home() {
           onClose={() => { setShowAddModal(false); setEditingCourse(null); }}
         />
       )}
-
       {detailCourse && (
         <CourseDetailModal
           course={detailCourse}
@@ -315,13 +364,10 @@ export default function Home() {
           onClose={() => setDetailCourse(null)}
         />
       )}
-
       {showCatalog && (
         <CourseCatalogModal
           existingCourses={courses}
-          onAdd={course => {
-            handleSaveCourse(course);
-          }}
+          onAdd={handleSaveCourse}
           onClose={() => setShowCatalog(false)}
         />
       )}
