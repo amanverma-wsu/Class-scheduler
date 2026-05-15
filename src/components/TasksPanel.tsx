@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Task } from '@/lib/types';
+import { scheduleNotifications, clearAllTimers, pruneOldNotifications, registerServiceWorker } from '@/lib/notifications';
+import NotificationSettings from '@/components/NotificationSettings';
 
 const FEED_URL_KEY = 'canvas-feed-url';
 const COMPLETED_KEY = 'canvas-completed-tasks';
@@ -147,6 +149,7 @@ export default function TasksPanel({ onUrgentCount }: TasksPanelProps) {
   const [showSetup, setShowSetup] = useState(false);
   const [showDone, setShowDone] = useState(false);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>('default');
+  const [showNotifSettings, setShowNotifSettings] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(FEED_URL_KEY) ?? '';
@@ -154,6 +157,8 @@ export default function TasksPanel({ onUrgentCount }: TasksPanelProps) {
     setInputUrl(saved);
     setCompleted(loadCompleted());
     if (typeof Notification !== 'undefined') setNotifPermission(Notification.permission);
+    // Register service worker for background notifications
+    registerServiceWorker();
   }, []);
 
   const fetchTasks = useCallback(async (url: string) => {
@@ -177,7 +182,7 @@ export default function TasksPanel({ onUrgentCount }: TasksPanelProps) {
 
   useEffect(() => { if (feedUrl) fetchTasks(feedUrl); }, [feedUrl, fetchTasks]);
 
-  // When tasks change, report urgent count + fire notifications
+  // When tasks change, report urgent count + fire notifications + schedule countdown reminders
   useEffect(() => {
     if (tasks.length === 0) return;
     const { overdue, today } = groupTasks(tasks, completed);
@@ -187,6 +192,13 @@ export default function TasksPanel({ onUrgentCount }: TasksPanelProps) {
     try { localStorage.setItem(URGENT_COUNT_KEY, String(count)); } catch { /* ignore */ }
     onUrgentCount?.(count);
     fireNotifications(urgent);
+
+    // Schedule countdown reminders (6h, 3h, 1h, 10min before due)
+    const incompleteTasks = tasks.filter(t => !completed.has(t.id));
+    scheduleNotifications(incompleteTasks);
+    pruneOldNotifications(new Set(tasks.map(t => t.id)));
+
+    return () => clearAllTimers();
   }, [tasks, completed, onUrgentCount]);
 
   async function requestNotifications() {
@@ -196,6 +208,9 @@ export default function TasksPanel({ onUrgentCount }: TasksPanelProps) {
     if (perm === 'granted') {
       const { overdue, today } = groupTasks(tasks, completed);
       fireNotifications([...overdue, ...today]);
+      // Also start countdown reminders
+      const incompleteTasks = tasks.filter(t => !completed.has(t.id));
+      scheduleNotifications(incompleteTasks);
     }
   }
 
@@ -288,14 +303,16 @@ export default function TasksPanel({ onUrgentCount }: TasksPanelProps) {
           {/* Notification bell */}
           {notifPermission !== 'denied' && tasks.length > 0 && (
             notifPermission === 'granted' ? (
-              <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1" title="Notifications enabled">
-                🔔 On
-              </span>
+              <button onClick={() => setShowNotifSettings(true)}
+                className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1 hover:text-green-700 dark:hover:text-green-300 transition-colors"
+                title="Reminder settings — click to customize">
+                🔔 Reminders on
+              </button>
             ) : (
               <button onClick={requestNotifications}
                 className="text-xs text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 flex items-center gap-1 transition-colors"
-                title="Enable due-date notifications">
-                🔔 Enable alerts
+                title="Get reminders at 6h, 3h, 1h, and 10min before assignments are due">
+                🔔 Enable reminders
               </button>
             )
           )}
@@ -372,6 +389,11 @@ export default function TasksPanel({ onUrgentCount }: TasksPanelProps) {
           </>
         )}
       </div>
+
+      {/* Notification settings modal */}
+      {showNotifSettings && (
+        <NotificationSettings onClose={() => setShowNotifSettings(false)} />
+      )}
     </div>
   );
 }
