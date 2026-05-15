@@ -1,0 +1,23 @@
+name: Generate CI
+on:
+  push:
+    paths:
+      - 'project.yaml'
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: amanverma-wsu/cicd-tool@main
+        with:
+          config: 'project.yaml'
+          command: 'init'
+      - name: Commit generated workflow
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add .github/workflows/ci.yml
+          git diff --cached --quiet || git commit -m "chore: update CI workflow"
+          git push

@@ -1,0 +1,5 @@
+service: class-scheduler
+provider: github
+repository: amanverma-wsu/Class-scheduler
+branches:
+  - main
