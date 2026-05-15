@@ -19,6 +19,9 @@ jobs:
         with:
           config: 'project.yaml'
           command: 'init'
+      - name: Re-set git credentials
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/amanverma-wsu/Class-scheduler.git
       - name: Commit generated workflow
         run: |
           git config user.name "github-actions"
