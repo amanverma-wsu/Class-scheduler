@@ -19,11 +19,10 @@ jobs:
         with:
           config: 'project.yaml'
           command: 'init'
-      - name: Re-set git credentials
+      - name: Fix git credentials and push
         run: |
+          git config --local --unset-all http.https://github.com/.extraheader
           git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/amanverma-wsu/Class-scheduler.git
-      - name: Commit generated workflow
-        run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add .github/workflows/ci.yml
