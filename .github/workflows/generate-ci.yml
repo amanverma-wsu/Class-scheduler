@@ -7,13 +7,14 @@ on:
 
 permissions:
   contents: write
-  workflows: write
 
 jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
       - uses: amanverma-wsu/cicd-tool@main
         with:
           config: 'project.yaml'
